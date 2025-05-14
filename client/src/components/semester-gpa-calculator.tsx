@@ -321,10 +321,15 @@ export function SemesterGpaCalculator() {
               </Form>
             </div>
           ) : (
-            <div className="mb-6 flex justify-end">
+            <div className="mb-6 flex justify-between items-center">
+              <div className="flex items-center">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Tip:</span> "Unsorted" is the default semester for courses without a specified semester. You can rename it.
+                </p>
+              </div>
               <Button 
                 onClick={() => setIsAddingSemester(true)} 
-                className="bg-accent hover:bg-green-700 text-white"
+                className="bg-primary hover:bg-blue-700 text-white font-medium"
               >
                 Add New Semester
               </Button>

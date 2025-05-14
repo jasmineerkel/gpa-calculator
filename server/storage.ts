@@ -13,6 +13,7 @@ export interface IStorage {
   getSemesters(): Promise<Semester[]>;
   getSemesterById(id: number): Promise<Semester | undefined>;
   createSemester(semester: InsertSemester): Promise<Semester>;
+  updateSemesterName(id: number, name: string): Promise<Semester | undefined>;
   deleteSemester(id: number): Promise<boolean>;
   
   // Course methods
@@ -80,6 +81,22 @@ export class MemStorage implements IStorage {
     
     this.semesterData.set(id, semester);
     return semester;
+  }
+
+  async updateSemesterName(id: number, name: string): Promise<Semester | undefined> {
+    const semester = this.semesterData.get(id);
+    
+    if (!semester) {
+      return undefined;
+    }
+    
+    const updatedSemester: Semester = {
+      ...semester,
+      name
+    };
+    
+    this.semesterData.set(id, updatedSemester);
+    return updatedSemester;
   }
 
   async deleteSemester(id: number): Promise<boolean> {

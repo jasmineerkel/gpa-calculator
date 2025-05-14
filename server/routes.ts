@@ -75,6 +75,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete semester" });
     }
   });
+  
+  // Update semester name
+  app.patch("/api/semesters/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid semester ID" });
+      }
+      
+      const { name } = req.body;
+      
+      if (!name || typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({ message: "Valid semester name is required" });
+      }
+      
+      const semester = await storage.updateSemesterName(id, name);
+      
+      if (!semester) {
+        return res.status(404).json({ message: "Semester not found" });
+      }
+      
+      res.status(200).json(semester);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update semester" });
+    }
+  });
 
   // API routes for course operations
   app.get("/api/courses", async (req, res) => {
