@@ -48,6 +48,9 @@ export function SemesterGpaCalculator() {
   const [activeSemesterId, setActiveSemesterId] = useState<number | null>(null);
   const [isAddingSemester, setIsAddingSemester] = useState(false);
   const [expandedSemesters, setExpandedSemesters] = useState<number[]>([]);
+  const [isRenamingSemester, setIsRenamingSemester] = useState(false);
+  const [semesterToRename, setSemesterToRename] = useState<number | null>(null);
+  const [newSemesterName, setNewSemesterName] = useState("");
   
   const { toast } = useToast();
 
@@ -150,6 +153,31 @@ export function SemesterGpaCalculator() {
     }
   });
 
+  // Rename semester mutation
+  const renameSemesterMutation = useMutation({
+    mutationFn: async ({ semesterId, name }: { semesterId: number, name: string }) => {
+      const response = await apiRequest("PATCH", `/api/semesters/${semesterId}`, { name });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/semesters"] });
+      setIsRenamingSemester(false);
+      setSemesterToRename(null);
+      setNewSemesterName("");
+      toast({
+        title: "Semester renamed",
+        description: "The semester has been renamed successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to rename the semester",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Delete semester mutation
   const deleteSemesterMutation = useMutation({
     mutationFn: async (semesterId: number) => {
@@ -213,7 +241,11 @@ export function SemesterGpaCalculator() {
     }
     
     // Parse grade value and calculate grade points
-    const gradeValue = parseFloat(data.gradeValue.toString());
+    let gradeValue = parseFloat(data.gradeValue.toString());
+    // Handle NaN values
+    if (isNaN(gradeValue)) {
+      gradeValue = 0;
+    }
     const gradePoints = calculateGradePoints(data.creditHours, gradeValue);
     const gradeLetter = getGradeLetterFromValue(gradeValue);
 
@@ -241,6 +273,30 @@ export function SemesterGpaCalculator() {
     // This is handled in the CourseList component
   };
 
+  const handleRenameSemester = (semesterId: number) => {
+    const semester = semesters.find(s => s.id === semesterId);
+    if (semester) {
+      setSemesterToRename(semesterId);
+      setNewSemesterName(semester.name);
+      setIsRenamingSemester(true);
+    }
+  };
+  
+  const confirmRenameSemester = async () => {
+    if (semesterToRename === null || newSemesterName.trim() === '') {
+      return;
+    }
+    
+    try {
+      await renameSemesterMutation.mutateAsync({ 
+        semesterId: semesterToRename, 
+        name: newSemesterName.trim() 
+      });
+    } catch (error) {
+      console.error("Failed to rename semester:", error);
+    }
+  };
+  
   const handleDeleteSemester = async (semesterId: number) => {
     if (semesterId === 1) {
       toast({
@@ -274,6 +330,45 @@ export function SemesterGpaCalculator() {
 
   return (
     <div>
+      {/* Rename Semester Dialog */}
+      {isRenamingSemester && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Rename Semester</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                New Semester Name
+              </label>
+              <input
+                type="text"
+                value={newSemesterName}
+                onChange={(e) => setNewSemesterName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter new name"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsRenamingSemester(false);
+                  setSemesterToRename(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={confirmRenameSemester}
+                className="bg-primary hover:bg-blue-700 text-white"
+                disabled={renameSemesterMutation.isPending || !newSemesterName.trim()}
+              >
+                {renameSemesterMutation.isPending ? "Renaming..." : "Rename"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <Card className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Calculate Semester GPA</h2>
@@ -374,6 +469,14 @@ export function SemesterGpaCalculator() {
                               className={activeSemesterId === semester.id ? "bg-blue-100" : ""}
                             >
                               {activeSemesterId === semester.id ? "Selected" : "Select"}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                              onClick={() => handleRenameSemester(semester.id)}
+                            >
+                              Rename
                             </Button>
                             {semester.id !== 1 && (
                               <Button 

@@ -128,7 +128,11 @@ export function CumulativeGpaCalculator() {
 
   async function onSubmit(data: CumulativeGpaFormValues) {
     // Parse grade value and calculate grade points
-    const gradeValue = parseFloat(data.gradeValue.toString());
+    let gradeValue = parseFloat(data.gradeValue.toString());
+    // Handle NaN values 
+    if (isNaN(gradeValue)) {
+      gradeValue = 0;
+    }
     const gradePoints = calculateGradePoints(data.creditHours, gradeValue);
     const gradeLetter = getGradeLetterFromValue(gradeValue);
 

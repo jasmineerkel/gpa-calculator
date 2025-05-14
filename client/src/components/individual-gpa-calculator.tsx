@@ -36,7 +36,12 @@ export function IndividualGpaCalculator() {
   });
 
   function onSubmit(data: IndividualGpaFormValues) {
-    const gradeValue = data.gradeValue;
+    // Make sure we have a valid number
+    let gradeValue = data.gradeValue;
+    if (isNaN(gradeValue)) {
+      gradeValue = 0;
+    }
+    
     setGpaResult(gradeValue);
     setLetterGrade(getLetterGrade(gradeValue));
     setIsResultVisible(true);
