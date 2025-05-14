@@ -16,7 +16,7 @@ const individualGpaFormSchema = z.object({
     .number()
     .min(0.5, "Credit hours must be at least 0.5")
     .max(10, "Credit hours must be at most 10"),
-  gradeValue: z.string().min(1, "Grade is required"),
+  gradeValue: z.coerce.number().min(0, "Grade is required"),
 });
 
 type IndividualGpaFormValues = z.infer<typeof individualGpaFormSchema>;
@@ -31,12 +31,12 @@ export function IndividualGpaCalculator() {
     defaultValues: {
       courseName: "",
       creditHours: undefined,
-      gradeValue: "",
+      gradeValue: undefined,
     },
   });
 
   function onSubmit(data: IndividualGpaFormValues) {
-    const gradeValue = parseFloat(data.gradeValue);
+    const gradeValue = data.gradeValue;
     setGpaResult(gradeValue);
     setLetterGrade(getLetterGrade(gradeValue));
     setIsResultVisible(true);
@@ -94,8 +94,8 @@ export function IndividualGpaCalculator() {
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Grade</FormLabel>
                     <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
+                      onValueChange={(value) => field.onChange(parseFloat(value))} 
+                      value={field.value?.toString() || ""}
                     >
                       <FormControl>
                         <SelectTrigger>

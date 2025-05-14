@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { IndividualGpaCalculator } from "@/components/individual-gpa-calculator";
 import { CumulativeGpaCalculator } from "@/components/cumulative-gpa-calculator";
+import { SemesterGpaCalculator } from "@/components/semester-gpa-calculator";
 import { cn } from "@/lib/utils";
 
-type TabType = 'individual' | 'cumulative';
+type TabType = 'individual' | 'semester' | 'cumulative';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('individual');
@@ -18,7 +19,7 @@ export default function Home() {
           <button
             type="button"
             className={cn(
-              "px-5 py-2.5 text-sm font-medium rounded-l-lg focus:z-10 focus:ring-2 focus:ring-primary",
+              "px-5 py-2.5 text-sm font-medium focus:z-10 focus:ring-2 focus:ring-primary rounded-l-lg",
               activeTab === 'individual' 
                 ? "bg-primary text-white" 
                 : "bg-gray-200 text-gray-700"
@@ -26,6 +27,18 @@ export default function Home() {
             onClick={() => setActiveTab('individual')}
           >
             Individual Course GPA
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "px-5 py-2.5 text-sm font-medium focus:z-10 focus:ring-2 focus:ring-primary",
+              activeTab === 'semester' 
+                ? "bg-primary text-white" 
+                : "bg-gray-200 text-gray-700"
+            )}
+            onClick={() => setActiveTab('semester')}
+          >
+            Semester GPA
           </button>
           <button
             type="button"
@@ -45,6 +58,9 @@ export default function Home() {
       {/* Calculator Components */}
       <div className={activeTab === 'individual' ? 'block' : 'hidden'}>
         <IndividualGpaCalculator />
+      </div>
+      <div className={activeTab === 'semester' ? 'block' : 'hidden'}>
+        <SemesterGpaCalculator />
       </div>
       <div className={activeTab === 'cumulative' ? 'block' : 'hidden'}>
         <CumulativeGpaCalculator />

@@ -17,6 +17,21 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+// Semester schema for GPA calculation
+export const semesters = pgTable("semesters", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  userId: serial("user_id").references(() => users.id),
+});
+
+export const insertSemesterSchema = createInsertSchema(semesters).omit({
+  id: true,
+  userId: true,
+});
+
+export type InsertSemester = z.infer<typeof insertSemesterSchema>;
+export type Semester = typeof semesters.$inferSelect;
+
 // Course schema for GPA calculation
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
@@ -25,12 +40,14 @@ export const courses = pgTable("courses", {
   grade: text("grade").notNull(),
   gradeValue: real("grade_value").notNull(),
   gradePoints: real("grade_points").notNull(),
+  semesterId: serial("semester_id").references(() => semesters.id),
   userId: serial("user_id").references(() => users.id),
 });
 
 export const insertCourseSchema = createInsertSchema(courses).omit({
   id: true,
   userId: true,
+  semesterId: true,
 });
 
 export const gradeValues = {
