@@ -124,32 +124,26 @@ export function SemesterGpaCalculator() {
   // Add course mutation
   const addCourseMutation = useMutation({
     mutationFn: async ({ courseData, semesterId }: { courseData: any, semesterId: number }) => {
+      console.log("Mutation executing with:", { courseData, semesterId });
+      
       const response = await apiRequest("POST", "/api/courses", {
         ...courseData,
         semesterId,
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Server error:", errorData);
+        throw new Error(errorData.message || "Failed to add course");
+      }
+      
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
-      courseForm.reset({
-        name: "",
-        creditHours: undefined,
-        grade: "",
-        gradeValue: undefined,
-        gradePoints: undefined
-      });
-      toast({
-        title: "Course added",
-        description: "The course has been added successfully",
-      });
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add the course",
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      console.error("Mutation error:", error);
     }
   });
 
@@ -240,6 +234,8 @@ export function SemesterGpaCalculator() {
       return;
     }
     
+    console.log("Adding course to semester ID:", activeSemesterId);
+    
     // Parse grade value and calculate grade points
     let gradeValue = parseFloat(data.gradeValue.toString());
     // Handle NaN values
@@ -258,14 +254,36 @@ export function SemesterGpaCalculator() {
       gradePoints: gradePoints
     };
 
+    console.log("Course data to be added:", newCourse);
+
     try {
       // Add to server via mutation
-      await addCourseMutation.mutateAsync({ 
+      const result = await addCourseMutation.mutateAsync({ 
         courseData: newCourse, 
         semesterId: activeSemesterId 
       });
+      console.log("Course add result:", result);
+      
+      // After success, reset the form
+      courseForm.reset({
+        name: "",
+        creditHours: undefined,
+        grade: "",
+        gradeValue: undefined,
+        gradePoints: undefined
+      });
+      
+      toast({
+        title: "Course added",
+        description: `The course "${data.name}" has been added to the semester`,
+      });
     } catch (error) {
       console.error("Failed to add course:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add the course. Please try again.",
+        variant: "destructive"
+      });
     }
   }
 
