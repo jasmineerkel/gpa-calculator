@@ -406,7 +406,7 @@ export function SemesterGpaCalculator() {
                     </Button>
                     <Button 
                       type="submit" 
-                      className="bg-accent hover:bg-green-700 text-white"
+                      className="bg-primary hover:bg-blue-700 text-white font-medium"
                       disabled={addSemesterMutation.isPending}
                     >
                       {addSemesterMutation.isPending ? "Adding..." : "Add Semester"}
@@ -594,7 +594,7 @@ export function SemesterGpaCalculator() {
                       <div className="md:col-span-4 flex justify-end space-x-2">
                         <Button 
                           type="submit" 
-                          className="bg-accent hover:bg-green-700 text-white"
+                          className="bg-primary hover:bg-blue-700 text-white font-medium"
                           disabled={addCourseMutation.isPending}
                         >
                           {addCourseMutation.isPending ? "Adding..." : "Add Course"}
