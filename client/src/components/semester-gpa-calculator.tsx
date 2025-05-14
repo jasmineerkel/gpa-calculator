@@ -264,11 +264,7 @@ export function SemesterGpaCalculator() {
   };
   
   const toggleSemesterExpansion = (semesterId: number) => {
-    setExpandedSemesters(prev => 
-      prev.includes(semesterId) 
-        ? prev.filter(id => id !== semesterId)
-        : [...prev, semesterId]
-    );
+    // This function now handled by the Accordion component
   };
   
   const allCoursesCount = semesters.reduce((total, semester) => total + semester.courses.length, 0);
@@ -349,12 +345,15 @@ export function SemesterGpaCalculator() {
                 </div>
               ) : (
                 <div className="mb-6">
-                  <Accordion type="multiple" value={expandedSemesters.map(String)}>
+                  <Accordion 
+                type="multiple" 
+                value={expandedSemesters.map(String)}
+                onValueChange={(values) => setExpandedSemesters(values.map(Number))}
+              >
                     {semesters.map((semester) => (
                       <AccordionItem key={semester.id} value={String(semester.id)}>
                         <div className="flex items-center justify-between">
                           <AccordionTrigger 
-                            onClick={() => toggleSemesterExpansion(semester.id)}
                             className="text-md font-medium py-4"
                           >
                             {semester.name} 
